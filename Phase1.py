@@ -11,7 +11,7 @@ def main():
 
     while not file_found:
         #input_file_name = input("Please enter the name of the input file")
-        input_file_name = "smallboi.xml"
+        input_file_name = "bigboi.xml"
         input_file = open(input_file_name, "r")
 
         if not input_file:
@@ -26,12 +26,12 @@ def main():
             date = parse_tag("date", email)
             sender = parse_tag("from", email)
             reciever = parse_tag("to", email)
-            subject = parse_tag("subj", email)
+            subj = parse_tag("subj", email)
             cc = parse_tag("cc", email)
             bcc = parse_tag("bcc", email)
             body = parse_tag("body", email)
 
-            #add_terms(terms_file, row, subj, body)
+            add_terms(terms_file, row, subj, body)
             add_emails(emails_file, row, sender, reciever, cc, bcc)
             add_dates(dates_file, row, date)
             add_recs(recs_file, row, email)
@@ -47,27 +47,41 @@ def add_terms(terms_file, row, subj, body):
     subj = replace_symbols(subj)
     body = replace_symbols(body)
 
+    for term in re.findall("[0-9a-zA-Z_-]{3,}", subj):
+        terms_file.write("s-{}:{}\n".format(term, row))
+
+    for term in re.findall("[0-9a-zA-Z_-]{3,}", body):
+        terms_file.write("b-{}:{}\n".format(term, row))
+
+    return
+
+
 def add_emails(emails_file, row, sender, receiever, cc, bcc):
-    #print("emails.txt - {} - {} - {} - {} - {}".format(row, sender, receiever, cc, bcc))
+
     if sender:
-        emails_file.write("from-{}:{}\n".format(sender, row))
+        emails_file.write("from-{}:{}\n".format(sender.lower(), row))
 
     if receiever:
-        emails_file.write("to-{}:{}\n".format(receiever, row))
+        for email in receiever.split(","):
+            emails_file.write("to-{}:{}\n".format(email.lower(), row))
 
     if cc:
-        emails_file.write("cc-{}:{}\n".format(cc, row))
+        for email in cc.split(","):
+            emails_file.write("cc-{}:{}\n".format(email.lower(), row))
 
     if bcc:
-        emails_file.write("bcc={}:{}\n".format(bcc, row))
+        for email in bcc.split(","):
+            emails_file.write("bcc={}:{}\n".format(email.lower(), row))
     
     return
 
 def add_dates(dates_file, row, date):
     dates_file.write("{}:{}\n".format(date,row))
+    return
 
 def add_recs(recs_file, row, email):
-    recs_file.write("{}:{}\n".format(row, email))
+    recs_file.write("{}:<mail>{}</mail>\n".format(row, email))
+    return
 
 def parse_tag(tag, line):
     checkmatch = re.search("(<{}>)(.*)(</{}>)".format(tag, tag), line)
@@ -79,7 +93,7 @@ def parse_tag(tag, line):
 
 def replace_symbols(line):
     line = re.sub("&lt;", "<", line)
-    line = re.sub("&gt;", "gt", line)
+    line = re.sub("&gt;", ">", line)
     line = re.sub("&amp;", "&", line)
     line = re.sub("&apos;", "'", line)
     line = re.sub("&quot;", '"', line)
