@@ -41,6 +41,10 @@ def main():
     dates_file.close()
     recs_file.close()
 
+    print("Phase 1 Finished")
+
+    return
+
     
 
 def add_terms(terms_file, row, subj, body):
