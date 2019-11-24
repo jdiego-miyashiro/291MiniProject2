@@ -81,7 +81,10 @@ def query_system(query_input,output_mode):
             #and so on with all the types
             
     #take the intersection of all the list inside the query_results and make a set
-            
+    
+
+    ### Andrew replace this with your intersect function and make sure that the output name is rows_ids ###
+        
     rows_id=queries_results[0]
     for query_result in queries_results:
         temp = query_result.intersection(rows_id)
@@ -91,8 +94,13 @@ def query_system(query_input,output_mode):
         
     #print result depending on the output mode
     
-    rows_id=list(rows_id)
-    if output_mode=='full':
+    
+    #rows_id=list(rows_id)
+    #rows_id=encode(rows_id)    #econded rows_ids
+    
+    
+    #replace this part with your printing methode
+    """if output_mode=='full':
         retrieve_emails(rows_id)
     else:
         print("Emails ids")
@@ -101,7 +109,7 @@ def query_system(query_input,output_mode):
         for element in rows_id:
             
             print(element)
-        
+        """"
     
         
         #if output mode equal brief
@@ -112,7 +120,12 @@ def query_system(query_input,output_mode):
       
         #query again for the full record 
         
-        
+def encode(rows_id):
+    for i in range(0,len(rows_id)):
+        rows_id[i]=rows_id[i].encode("utf-8")
+    return rows_id
+
+            
         
 def email_adress_queries(query):
 
@@ -127,12 +140,12 @@ def email_adress_queries(query):
     
     value=curs.set(txt.encode("utf-8"))
     if value != None:
-        result.append(str(value[1].decode("utf-8")))
+        result.append(str(value[1]))
         
         dup=curs.next_dup()
         
         while dup!= None:
-            result.append(str(dup[1].decode("utf-8")))
+            result.append(str(dup[1]))
             dup=curs.next_dup()
     else:
         result.append(None)
