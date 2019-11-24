@@ -33,6 +33,7 @@ def get_input():
     
     keywords=[':', '>','<','>=','<=','&']
     query_input=raw_input('Please enter a query using the provided grammar  ')
+    query_input = query_input.lower()
     query_input=query_input.split()
     
     for i in range(0,len(query_input)-1):
@@ -62,33 +63,71 @@ def query_system(query_input,output_mode):
 
             queries_results.append(query_result)
             
-           # if type of query == key_word for query type
-                #perform the query for the given operator
         
-                #query_result.append(list of rows ids output from the query
-                # maybe this can be written as a separate function that directly outputs the list of row ids that needs to be appended
-                
-           
-           
-           
-           # if type of query == key_word for another query type
-                #perform the query for the given operator
-                
-                #same as above
-        
-        
-        
-            #and so on with all the types
-            
-    #take the intersection of all the list inside the query_results and make a set
+        # if len == 1, then these are the inputs that arent split
+        if len(query) == 1:
+            # query for date
+            if query[0][:4] == "date":
+                # determine the operators, then query with the operators
+                if query[0][4:6] in "<=, >=":
+                    oper = query[0][4:6]
+                    all_query_results.append(query_dates(query[0][6:],oper))
+                else:
+                    oper = query[0][4:5]
+                    all_query_results.append(query_dates(query[0][5:],oper))
+            # if query was in form [word]%
+            elif len(query[0]) > 1 and query[0][-1] == "%":
+                all_query_results.append(wild_card_query(query[0][:-1]))
+            # if query was in form [word] %
+            elif query_input.index(query[0]) < len(query_input) - 1:
+                if query_input[query_input.index(query[0]) + 1] == "%":
+                    all_query_results.append(wild_card_query(query[0])) 
+            # if query is not these search options, query body and subject
+            elif query[0] not in ['to','cc','bcc','from','to','%']:
+                all_query_results.append(query_subjects(query[0]))
+                all_query_results.append(query_bodies(query[0]))
+        elif query[0] == "body":
+            all_query_results.append(query_bodies(query[1]))
+        elif query[0] == "subj":
+            all_query_results.append(query_subjects(query[1]))
+        elif query[0] == "date":
+            all_query_results.append(query_dates(query[1],"=="))
     
 
     ### Andrew replace this with your intersect function and make sure that the output name is rows_ids ###
         
-    rows_id=queries_results[0]
-    for query_result in queries_results:
-        temp = query_result.intersection(rows_id)
-        rows_id=temp
+
+    # add more row ids to all_query_results, ie, ids from the beginning of the function
+    # assumes queries_results is a list of list, where each embedded list is the output of a query
+    if len(queries_results) > 0:
+        for query in queries_results:
+            all_query_results.append(query)        
+
+    # if there are no results
+    if len(all_query_results) == 0:
+        print("(no results)")
+        return
+    
+    results =[]
+    # find the intersection of the queries
+    results = intersect(all_query_results)
+
+    # get the info to print
+    output_info = fetch_output_info(results, output_mode)
+    
+    # print everything
+    print_output_info(output_info, output_mode)
+
+ 
+    ####
+    #   Below this is old code i wont get rid of until we know the new stuff works
+    ####
+
+
+    #rows_id=queries_results[0]
+    #for query_result in queries_results:
+    #    temp = query_result.intersection(rows_id)
+    #    rows_id=temp
         
         
         
@@ -271,6 +310,133 @@ def print_output_info(output_info, output_mode):
         for tup in output_info:
             print("row id: " + tup[0] + "\t" + "subject: " + tup[1] + "\n" + "body: " + tup[2] +"\n")
         
+
+def intersect(IDList):
+    # convert everything to a set
+    for entry in range(len(IDList)):
+        IDList[entry] = set(IDList[entry])
+
+    # start off the new set containing all row ids to print
+    IDSet = IDList[0]
+
+    # find common row ids
+    for entry in IDList:
+        IDSet = IDSet.intersection(entry)
+
+    # returned the list of desired row ids
+    return list(IDSet)
+        
+
+def query_dates(day, oper):
+    db_file = "da.idx"
+    database = db.DB()
+    database.open(db_file, None, db.DB_BTREE, db.DB_CREATE)
+    rowID_list = []
+    rowNum = []
+    cur = database.cursor()
+    day = day.split("/")
+    # ensure that every date has no unneeded zeros
+    if day[1][0] == "0":
+        day[1] = day[1][-1]
+    if day[2][0] == "0":
+        day[2] = day[2][-1]
+        
+
+    currLine = cur.first()
+
+    while currLine:
+        print(currLine)
+        lineDate = currLine[0].decode("utf-8")
+        lineDate = lineDate.split("/")
+
+        # ensure that every date has no unneeded zeros
+        if lineDate[1][0] == "0":
+            lineDate[1] = lineDate[1][-1]
+        if lineDate[2][0] == "0":
+            lineDate[2] = lineDate[2][-1]  
+
+        # compare the dates, append if the date is what we want
+        # compare year
+        if eval(lineDate[0] + oper + day[0]) and oper != "==":
+            rowID_list.append(currLine[1])
+        elif lineDate[0] == day[0]:
+            # compare month
+            if eval(lineDate[1] + oper + day[1]) and oper != "==":
+                rowID_list.append(currLine[1])
+            elif lineDate[1] == day[1]:
+                # compare day
+                if eval(lineDate[2] + oper + day[2]):
+                    rowID_list.append(currLine[1])
+
+        currLine = cur.next()
     
+    cur.close()
+    database.close()
+
+    return rowID_list
+
+
+        
+
+
+
+
+def query_subjects(word):
+    db_file = "re.idx"
+    database = db.DB()
+    database.open(db_file, None, db.DB_HASH, db.DB_CREATE)
+    rowID_list = []
+    cur = database.cursor()
+
+    currLine = cur.first()
+
+    while currLine:
+        rowText = currLine[1].decode("utf-8")
+        # find beginning and end of subject
+        subStart = rowText.find("<subj>") + 6
+        subEnd = rowText.find("</subj>")
+
+        # determine if word is in subject, addi if it is
+        if word in rowText[subStart:subEnd]:
+            rowNum = currLine[0]
+            rowID_list.append(rowNum)
+        
+        currLine = cur.next()
+
+    cur.close()
+    database.close()
+
+    return rowID_list
+
+def query_bodies(word):
+    db_file = "re.idx"
+    database = db.DB()
+    database.open(db_file, None, db.DB_HASH, db.DB_CREATE)
+    rowID_list = []
+    cur = database.cursor()
+
+    currLine = cur.first()
+
+    while currLine:
+        rowText = currLine[1].decode("utf-8")
+        # find beginning and end of subject
+        bodyStart = rowText.find("<body>") + 6
+        bodyEnd = rowText.find("</body>")
+
+        # determine if word is in subject, addi if it is
+        if word in rowText[bodyStart:bodyEnd]:
+            rowNum = currLine[0]
+            rowID_list.append(rowNum)
+
+        currLine = cur.next()
+
+    cur.close()
+    database.close()
+
+    return rowID_list
+
+
+
+
 main()    
     
