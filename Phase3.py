@@ -32,7 +32,7 @@ def main():
 def get_input():
     
     keywords=[':', '>','<','>=','<=','&']
-    query_input=raw_input('Please enter a query using the provided grammar  ')
+    query_input=input('Please enter a query using the provided grammar  ')
     query_input = query_input.lower()
     query_input=query_input.split()
     
@@ -52,6 +52,8 @@ def get_input():
     
 def query_system(query_input,output_mode):
     
+    all_query_results = []
+
     queries_results=[]
     
     for query in query_input:
@@ -88,7 +90,7 @@ def query_system(query_input,output_mode):
                 all_query_results.append(query_bodies(query[0]))
         elif query[0] == "body":
             all_query_results.append(query_bodies(query[1]))
-        elif query[0] == "subj":
+        elif query[0] in "subject":
             all_query_results.append(query_subjects(query[1]))
         elif query[0] == "date":
             all_query_results.append(query_dates(query[1],"=="))
@@ -148,7 +150,7 @@ def query_system(query_input,output_mode):
         for element in rows_id:
             
             print(element)
-        """"
+        """
     
         
         #if output mode equal brief
