@@ -8,9 +8,24 @@ the function will return [body:stock,confidential,shares,date<2001/04/12] """
 from bsddb3 import db
 
 def main():
-    query_input=get_input()
-    query_system(query_input,'full')
-    pass
+    #brief by default
+    output_mode = "brief"
+    while True:
+        command = input("press enter to start(q to quit, change output mode here): ")
+        comm = command.lower()
+
+        if comm == "output=full":
+            output_mode = "full"
+        elif comm == "output=brief":
+            output_mode = "brief"
+        elif comm == "q":
+            break
+        
+        query_input=get_input()
+        query_system(query_input,output_mode)
+    
+    
+    return
 
 
 
@@ -143,6 +158,105 @@ def retrieve_emails(rows_id):
         print(email[1])
     curs.close()
     database.close()
+
+
+def wild_card_query(word):
+    # queries for words with the inputted word as the prefix
+    
+    db_file = "te.idx"
+    database = db.DB()
+    database.open(db_file, None, db.DB_BTREE, db.DB_CREATE)
+    cur = database.cursor()
+    result = []
+    currLine = cur.first()
+
+    while currLine:
+        currWord = currLine[0].decode("utf-8")
+        if word in currWord:
+            result.append(currLine[1])
+        currLine = cur.next()
+
+    cur.close()
+    database.close()
+    print(result)
+    return result
+
+
+def fetch_output_info(rowID_list, output_mode):
+    # usage: given a list of row ids, it returns a tuple of lists consisitng of row id, subject, and (if output_mode = full) body
+    # ie it returns ([id_1,subject_1,body_1],[id_2,subject_2,body_2],...,[id_n, subject_n,body_n]) for some integer n
+    # Given a list of row ids, this function returns the row ids and the subjects' and body's(if mode is full) associated with the row ids.
+    #####
+    # NOTE : each number in rowID_list must be encoded in utf-8 format
+    #####
+
+    # ensures uniqueness (dont need duplicates)
+    rowID_list = set(rowID_list)
+    rowID_list = list(rowID_list)
+
+    db_file = "re.idx"
+    database = db.DB()
+    database.open(db_file, None, db.DB_HASH, db.DB_CREATE)
+    cur = database.cursor()
+    resultArray = []
+
+    currLine = cur.first()
+
+    while currLine:
+        # if the current line is relevant
+        if currLine[0] in rowID_list:
+            # currIndex holds all the desired info from this line
+            currIndex = []
+            # grab the row number and associated text
+            rowNum = currLine[0].decode("utf-8")
+            rowText = currLine[1].decode("utf-8")
+
+            # currIndex gets the row num
+            currIndex.append(rowNum)
+
+            # splice the subject
+            subStart = rowText.find("<subj>") + 6
+            subEnd = rowText.find("</subj>")
+
+            if subStart == subEnd:
+                subjectText = "(no subject)"
+            else:
+                subjectText = rowText[subStart:subEnd]
+
+            # currIndex gets the subject
+            currIndex.append(subjectText)
+
+            if output_mode == "full":
+                # splice the body
+                bodyStart = rowText.find("<body>") + 6
+                bodyEnd = rowText.find("</body>")
+                
+                if bodyStart == bodyEnd:
+                    bodyText = "(no body)"
+                else:
+                    bodyText = rowText[bodyStart:bodyEnd]
+                # currIndex gets the body
+                currIndex.append(bodyText)
+
+            # relevent info from this line is appended to the entire array of results
+            resultArray.append(currIndex)
+
+        currLine = cur.next()
+
+    cur.close()
+    database.close()
+
+    return tuple(resultArray)
+
+def print_output_info(output_info, output_mode):
+    # output_info should be in the form ([rowID,subject, body], [rowID,subject, body], ...) where body is not necessary 
+    # prints relevent info based on output mode
+    if output_mode == "brief":
+        for tup in output_info:
+            print("row id: " + tup[0] + "\t" + "subject: " + tup[1])
+    elif output_mode == "full":
+        for tup in output_info:
+            print("row id: " + tup[0] + "\t" + "subject: " + tup[1] + "\n" + "body: " + tup[2] +"\n")
         
     
 main()    
