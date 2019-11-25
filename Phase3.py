@@ -37,6 +37,13 @@ def get_input():
     query_input=input('Please enter a query using the provided grammar  ')
     query_input = query_input.lower()
     query_input=query_input.split()
+
+    #ensures some term has been inputted
+    try:
+        query_input[0]
+    except:
+        print("(no results)")
+        return
     
     for i in range(0,len(query_input)-1):
         for keyword in keywords:
