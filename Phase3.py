@@ -232,7 +232,7 @@ def wild_card_query(word):
 
     while currLine:
         currWord = currLine[0].decode("utf-8")
-        if word in currWord:
+        if word == currWord[2:len(word)+2]:
             result.append(currLine[1])
         currLine = cur.next()
 
