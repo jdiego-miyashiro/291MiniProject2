@@ -386,27 +386,21 @@ def query_dates(day, oper):
 
         
 
-
-
-
 def query_subjects(word):
-    db_file = "re.idx"
+    db_file = "te.idx"
     database = db.DB()
-    database.open(db_file, None, db.DB_HASH, db.DB_CREATE)
+    database.open(db_file, None, db.DB_BTREE, db.DB_CREATE)
     rowID_list = []
     cur = database.cursor()
 
     currLine = cur.first()
 
     while currLine:
-        rowText = currLine[1].decode("utf-8")
-        # find beginning and end of subject
-        subStart = rowText.find("<subj>") + 6
-        subEnd = rowText.find("</subj>")
+        rowText = currLine[0].decode("utf-8")
 
-        # determine if word is in subject, addi if it is
-        if word in rowText[subStart:subEnd]:
-            rowNum = currLine[0]
+        # find words in subject, determine if word is in subject
+        if rowText[0] == "s" and rowText[2:] == word:
+            rowNum = currLine[1]
             rowID_list.append(rowNum)
         
         currLine = cur.next()
@@ -417,23 +411,20 @@ def query_subjects(word):
     return rowID_list
 
 def query_bodies(word):
-    db_file = "re.idx"
+    db_file = "te.idx"
     database = db.DB()
-    database.open(db_file, None, db.DB_HASH, db.DB_CREATE)
+    database.open(db_file, None, db.DB_BTREE, db.DB_CREATE)
     rowID_list = []
     cur = database.cursor()
 
     currLine = cur.first()
 
     while currLine:
-        rowText = currLine[1].decode("utf-8")
-        # find beginning and end of subject
-        bodyStart = rowText.find("<body>") + 6
-        bodyEnd = rowText.find("</body>")
-
-        # determine if word is in subject, addi if it is
-        if word in rowText[bodyStart:bodyEnd]:
-            rowNum = currLine[0]
+        rowText = currLine[0].decode("utf-8")
+        
+        # find body words, determine if word is in body
+        if rowText[0] == "b" and rowText[2:] == word:
+            rowNum = currLine[1]
             rowID_list.append(rowNum)
 
         currLine = cur.next()
