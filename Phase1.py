@@ -10,8 +10,7 @@ def main():
     recs_file = open("recs.txt", "w+")
 
     while not file_found:
-        #input_file_name = input("Please enter the name of the input file")
-        input_file_name = "bigboi.xml"
+        input_file_name = input("Please enter the name of the input file")
         input_file = open(input_file_name, "r")
 
         if not input_file:

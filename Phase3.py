@@ -96,9 +96,6 @@ def query_system(query_input,output_mode):
             all_query_results.append(query_subjects(query[1]))
         elif query[0] == "date":
             all_query_results.append(query_dates(query[1],"=="))
-    
-
-    ### Andrew replace this with your intersect function and make sure that the output name is rows_ids ###
         
 
     # add more row ids to all_query_results, ie, ids from the beginning of the function
