@@ -185,7 +185,7 @@ def email_adress_queries(query):
         dup=curs.next_dup()
         
         while dup!= None:
-            result.append(str(dup[1]))
+            result.append(dup[1])
             dup=curs.next_dup()
     else:
         result.append(None)
