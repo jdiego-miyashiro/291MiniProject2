@@ -16,8 +16,10 @@ def main():
 
         if comm == "output=full":
             output_mode = "full"
+            print("outputting in full")
         elif comm == "output=brief":
             output_mode = "brief"
+            print("outputting in brief")
         elif comm == "q":
             break
         
@@ -103,7 +105,7 @@ def query_system(query_input,output_mode):
     # assumes queries_results is a list of list, where each embedded list is the output of a query
     if len(queries_results) > 0:
         for query in queries_results:
-            all_query_results.append(query)        
+            all_query_results.append(query)     
 
     # if there are no results
     if len(all_query_results) == 0:
