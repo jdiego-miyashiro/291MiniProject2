@@ -48,6 +48,7 @@ def main():
     
 
 def add_terms(terms_file, row, subj, body):
+    #find all terms with length 3 within parameters
     for term in re.findall("[0-9a-zA-Z_-]{3,}", subj):
         terms_file.write("s-{}:{}\n".format(term, row))
 
@@ -85,6 +86,7 @@ def add_recs(recs_file, row, email):
     return
 
 def parse_tag(tag, line):
+    #check if the tags exist, if so, get string from inside
     checkmatch = re.search("(<{}>)(.*)(</{}>)".format(tag, tag), line)
     if checkmatch:
         inner_string = checkmatch.group(2).lower()
