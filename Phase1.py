@@ -72,7 +72,7 @@ def add_emails(emails_file, row, sender, receiever, cc, bcc):
 
     if bcc:
         for email in bcc.split(","):
-            emails_file.write("bcc={}:{}\n".format(email.lower(), row))
+            emails_file.write("bcc-{}:{}\n".format(email.lower(), row))
     
     return
 
