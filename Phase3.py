@@ -92,7 +92,7 @@ def query_system(query_input,output_mode):
                 all_query_results.append(query_bodies(query[0]))
         elif query[0] == "body":
             all_query_results.append(query_bodies(query[1]))
-        elif query[0] in "subject":
+        elif query[0] == "subj":
             all_query_results.append(query_subjects(query[1]))
         elif query[0] == "date":
             all_query_results.append(query_dates(query[1],"=="))
