@@ -231,7 +231,7 @@ def wild_card_query(word):
 
     cur.close()
     database.close()
-    print(result)
+    
     return result
 
 
@@ -345,7 +345,6 @@ def query_dates(day, oper):
     currLine = cur.first()
 
     while currLine:
-        print(currLine)
         lineDate = currLine[0].decode("utf-8")
         lineDate = lineDate.split("/")
 
