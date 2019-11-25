@@ -333,7 +333,6 @@ def query_dates(day, oper):
     database = db.DB()
     database.open(db_file, None, db.DB_BTREE, db.DB_CREATE)
     rowID_list = []
-    rowNum = []
     cur = database.cursor()
     day = day.split("/")
     # ensure that every date has no unneeded zeros
