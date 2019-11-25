@@ -24,7 +24,9 @@ def main():
             break
         
         query_input=get_input()
-        query_system(query_input,output_mode)
+        
+        if query_input != False:
+            query_system(query_input,output_mode)
     
     
     return
@@ -42,8 +44,8 @@ def get_input():
     try:
         query_input[0]
     except:
-        print("(no results)")
-        return
+        print("(no results, please type something)")
+        return False
     
     for i in range(0,len(query_input)-1):
         for keyword in keywords:
@@ -70,7 +72,7 @@ def query_system(query_input,output_mode):
         
         if query[0] in ['to','cc','bcc','from','to']:
             query_result=email_adress_queries(query)
-            query_result=set(query_result)
+            
 
             queries_results.append(query_result)
             
@@ -107,7 +109,7 @@ def query_system(query_input,output_mode):
 
     # add more row ids to all_query_results, ie, ids from the beginning of the function
     # assumes queries_results is a list of list, where each embedded list is the output of a query
-    if len(queries_results) > 0:
+    if len(queries_results) > 0 and queries_results[0] != [None]:
         for query in queries_results:
             all_query_results.append(query)     
 
