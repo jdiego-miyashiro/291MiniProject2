@@ -97,8 +97,12 @@ def query_system(query_input,output_mode):
                     all_query_results.append(wild_card_query(query[0])) 
             # if query is not these search options, query body and subject
             elif query[0] not in ['to','cc','bcc','from','to','%']:
-                all_query_results.append(query_subjects(query[0]))
-                all_query_results.append(query_bodies(query[0]))
+                # this unions the result of querying for the word in the body and in the subject
+                subj_results = set(query_subjects(query[0]))
+                body_results = set(query_bodies(query[0]))
+                union_results = subj_results.union(body_results)
+                union_results = list(union_results)
+                all_query_results.append(union_results)
         elif query[0] == "body":
             all_query_results.append(query_bodies(query[1]))
         elif query[0] == "subj":
