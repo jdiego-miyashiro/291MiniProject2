@@ -231,7 +231,7 @@ def wild_card_query(word):
 
     cur.close()
     database.close()
-    print(result)
+    
     return result
 
 
