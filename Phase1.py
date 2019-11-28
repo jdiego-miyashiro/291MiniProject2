@@ -10,8 +10,7 @@ def main():
     recs_file = open("recs.txt", "w+")
 
     while not file_found:
-        #input_file_name = input("Please enter the name of the input file")
-        input_file_name = "bigboi.xml"
+        input_file_name = input("Please enter the name of the input file")
         input_file = open(input_file_name, "r")
 
         if not input_file:
@@ -22,6 +21,7 @@ def main():
     for line in input_file:
         email = parse_tag("mail", line)
         if email:
+            email = replace_symbols(email)
             row = parse_tag("row", email)
             date = parse_tag("date", email)
             sender = parse_tag("from", email)
@@ -48,9 +48,7 @@ def main():
     
 
 def add_terms(terms_file, row, subj, body):
-    subj = replace_symbols(subj)
-    body = replace_symbols(body)
-
+    #find all terms with length 3 within parameters
     for term in re.findall("[0-9a-zA-Z_-]{3,}", subj):
         terms_file.write("s-{}:{}\n".format(term, row))
 
@@ -75,7 +73,7 @@ def add_emails(emails_file, row, sender, receiever, cc, bcc):
 
     if bcc:
         for email in bcc.split(","):
-            emails_file.write("bcc={}:{}\n".format(email.lower(), row))
+            emails_file.write("bcc-{}:{}\n".format(email.lower(), row))
     
     return
 
@@ -88,6 +86,7 @@ def add_recs(recs_file, row, email):
     return
 
 def parse_tag(tag, line):
+    #check if the tags exist, if so, get string from inside
     checkmatch = re.search("(<{}>)(.*)(</{}>)".format(tag, tag), line)
     if checkmatch:
         inner_string = checkmatch.group(2).lower()
@@ -101,7 +100,7 @@ def replace_symbols(line):
     line = re.sub("&amp;", "&", line)
     line = re.sub("&apos;", "'", line)
     line = re.sub("&quot;", '"', line)
+    line = re.sub("&#[0-9];", "", line)
     return line
-
 
 main()
